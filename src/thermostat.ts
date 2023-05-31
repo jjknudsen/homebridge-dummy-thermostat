@@ -114,6 +114,16 @@ export default class Thermostat implements AccessoryPlugin {
 	private getCurrentTemperature(cb: CharacteristicGetCallback) {
 		cb(null, this.currentTemperature);
 	}
+		
+	private setCurrentTemperature(
+		value: CharacteristicValue,
+		cb: CharacteristicSetCallback
+	) {
+		this.currentTemperature = value;
+
+		this.logger.debug(`Set CurrentTemperature to '${value}'`);
+		cb();
+	}
 
 	private getTargetTemperature(cb: CharacteristicGetCallback) {
 		cb(null, this.targetTemperature);
@@ -124,12 +134,6 @@ export default class Thermostat implements AccessoryPlugin {
 		cb: CharacteristicSetCallback
 	) {
 		this.targetTemperature = value;
-
-		this.currentTemperature = value;
-		this.service.setCharacteristic(
-			this.Characteristic.CurrentTemperature,
-			value
-		);
 
 		this.logger.debug(`Set Temperature to '${value}'`);
 		cb();
@@ -176,7 +180,8 @@ export default class Thermostat implements AccessoryPlugin {
 
 		this.service
 			.getCharacteristic(this.Characteristic.CurrentTemperature)
-			.on('get', this.getCurrentTemperature.bind(this));
+			.on('get', this.getCurrentTemperature.bind(this))
+			.on('set', this.setCurrentTemperature.bind(this));
 
 		this.service
 			.getCharacteristic(this.Characteristic.TargetTemperature)
